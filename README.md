@@ -7,7 +7,7 @@ modify from `https://github.com/Hzzone/pytorch-openpose`
 ### Generate Keypoints
 ```
 # v- coco
-python body_dec.py --dataset vcoco --path /your_path/coco/images/train2014 --out_path /your_path/human_pose/train2014
+python body_dec.py --dataset vcoco --part_vcoco train --path /your_path/coco/images/ --out_path /your_path/human_pose/train2014
 
 # hico-det
 python body_dec.py --dataset hico --path /your_path/hico_20160224_det/images/train2015 --out_path /your_path/human_pose/train2015
