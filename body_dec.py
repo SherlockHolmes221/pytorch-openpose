@@ -60,10 +60,7 @@ def detect_for_hico_dataset(image_path, out_path):
         # plt.show()
 
 
-def detect_for_vcoco_dataset(image_dir, out_path):
-    data_name = 'val'
-    data_name = 'test' if "test" in image_dir else data_name
-    data_name = 'train' if "train" in image_dir else data_name
+def detect_for_vcoco_dataset(image_dir, out_path, data_name="train"):
     if not os.path.exists(image_dir):
         assert False
     if not os.path.exists(out_path):
@@ -76,9 +73,24 @@ def detect_for_vcoco_dataset(image_dir, out_path):
     body_estimation = Body('model/body_pose_model.pth')
 
     for id in ids:
-        image_name = "COCO_" + data_name + "2014_" + str(id).zfill(12) + ".jpg"
-        image_path = os.path.join(image_dir, image_name)
-        assert os.path.exists(image_path)
+        if data_name == 'train':
+            image_name = "COCO_" + data_name + "2014_" + str(id).zfill(12) + ".jpg"
+            image_path = os.path.join(image_dir, "train2014", image_name)
+            assert os.path.exists(image_path)
+        else:
+            image_name1 = "COCO_" + "train" + "2014_" + str(id).zfill(12) + ".jpg"
+            image_path1 = os.path.join(image_dir, "train2014", image_name1)
+            image_name2 = "COCO_" + "val" + "2014_" + str(id).zfill(12) + ".jpg"
+            image_path2 = os.path.join(image_dir, "val2014", image_name2)
+
+            assert os.path.exists(image_path1) or os.path.exists(image_path2)
+
+            if os.path.exists(image_path1):
+                image_path = image_path1
+                image_name = image_name1
+            else:
+                image_path = image_path2
+                image_name = image_name2
 
         save_path = image_name[:-4] + '_keypoints.json'
         # if os.path.exists(os.path.join(out_path, save_path)):
@@ -112,9 +124,9 @@ def detect_for_vcoco_dataset(image_dir, out_path):
             json.dump(pose_per_image, f, indent=4)
 
 
-# python body_dec.py --dataset vcoco --path /home/xian/media/data/coco/images/train2014 --out_path /home/xian/Documents/code/my_no_frills/data_symlinks/coco_processed/human_pose/train2014
-# python body_dec.py --dataset vcoco --path /home/xian/media/data/coco/images/val2014 --out_path /home/xian/Documents/code/my_no_frills/data_symlinks/coco_processed/human_pose/val2014
-# python body_dec.py --dataset vcoco --path /home/xian/media/data/coco/images/test2014 --out_path /home/xian/Documents/code/my_no_frills/data_symlinks/coco_processed/human_pose/test2014
+# python body_dec.py --dataset vcoco --part_vcoco train --path /home/xian/media/data/coco/images/ --out_path /home/xian/Documents/code/my_no_frills/data_symlinks/coco_processed/human_pose/train2014
+# python body_dec.py --dataset vcoco --part_vcoco val --path /home/xian/media/data/coco/images/ --out_path /home/xian/Documents/code/my_no_frills/data_symlinks/coco_processed/human_pose/val2014
+# python body_dec.py --dataset vcoco --part_vcoco test --path /home/xian/media/data/coco/images/ --out_path /home/xian/Documents/code/my_no_frills/data_symlinks/coco_processed/human_pose/test2014
 # python body_dec.py --dataset hico --path /home/xian/media/data/HIOC/hico_20160224_det/images/train2015 --out_path /home/xian/Documents/code/my_no_frills/data_symlinks/hico_processed/human_pose/train2015
 # python body_dec.py --dataset hico --path /home/xian/media/data/HIOC/hico_20160224_det/images/test2015 --out_path /home/xian/Documents/code/my_no_frills/data_symlinks/hico_processed/human_pose/test2015
 if __name__ == '__main__':
@@ -122,6 +134,7 @@ if __name__ == '__main__':
     parser.add_argument("--dataset")
     parser.add_argument("--path")
     parser.add_argument("--out_path")
+    parser.add_argument("--part_vcoco")
     args = parser.parse_args()
 
     assert args.dataset is not None
@@ -131,6 +144,7 @@ if __name__ == '__main__':
     if args.dataset == 'hico':
         detect_for_hico_dataset(args.path, args.out_path)
     elif args.dataset == 'vcoco':
-        detect_for_vcoco_dataset(args.path, args.out_path)
+        assert args.part_vcoco is not None
+        detect_for_vcoco_dataset(args.path, args.out_path, args.part_vcoco)
     else:
         assert False
